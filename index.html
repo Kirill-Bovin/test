@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Каталог велосипедов — Cloud Bike Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+:root {
+    --bg: #eef3f9;
+    --card: rgba(255, 255, 255, 0.78);
+    --card-hover: rgba(255, 255, 255, 0.95);
+    --text: #101828;
+    --muted: #707887;
+    --soft: #9aa3b2;
+    --accent: #ff6a1a;
+    --accent-dark: #e9570d;
+    --green: #1fa67a;
+    --blue: #3578ff;
+    --red: #f05454;
+    --line: rgba(16, 24, 40, 0.1);
+    --border: rgba(255, 255, 255, 0.9);
+    --shadow: 0 24px 70px rgba(31, 57, 103, 0.14);
+    --shadow-hover: 0 34px 90px rgba(31, 57, 103, 0.23);
+    --radius-xl: 34px;
+    --radius-lg: 26px;
+    --radius-md: 18px;
+    --radius-pill: 999px;
+    --container: 1320px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    font-family: 'Manrope', system-ui, sans-serif;
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    background:
+      radial-gradient(circle at 12% 12%, rgba(109, 171, 255, 0.42), transparent 30%),
+      radial-gradient(circle at 88% 18%, rgba(135, 233, 206, 0.34), transparent 30%),
+      radial-gradient(circle at 50% 95%, rgba(196, 211, 255, 0.56), transparent 38%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+  img { display: block; max-width: 100%; }
+  button { font-family: inherit; }
+  svg { stroke-linecap: round; stroke-linejoin: round; }
+
+  .catalog { padding: 72px 20px; }
+  .container { max-width: var(--container); margin: 0 auto; }
+
+  .catalog-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 32px; margin-bottom: 34px;
+  }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 8px; margin-bottom: 14px;
+    padding: 8px 15px; border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: var(--radius-pill); background: rgba(255, 255, 255, 0.56);
+    color: var(--accent); font-size: 13px; font-weight: 800; letter-spacing: .02em;
+    backdrop-filter: blur(16px);
+  }
+  .kicker svg { width: 16px; height: 16px; fill: none; stroke: var(--accent); stroke-width: 1.8; }
+  .catalog-title {
+    max-width: 720px; font-size: clamp(34px, 5vw, 56px); line-height: 1.0;
+    letter-spacing: -0.04em; font-weight: 800;
+  }
+  .catalog-title span { color: var(--accent); }
+  .catalog-text { max-width: 390px; color: var(--muted); font-size: 16px; }
+
+  .products-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+
+  .product-card {
+    display: flex; flex-direction: column; gap: 20px;
+    min-height: 100%; padding: 18px;
+    border: 1px solid var(--border); border-radius: var(--radius-xl);
+    background: var(--card); box-shadow: var(--shadow); backdrop-filter: blur(24px);
+    transition: transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s ease, background .3s ease, border-color .3s ease;
+  }
+  .product-card:hover {
+    transform: translateY(-7px); background: var(--card-hover);
+    border-color: #fff; box-shadow: var(--shadow-hover);
+  }
+
+  .product-gallery {
+    position: relative; aspect-ratio: 16 / 10; display: grid; place-items: center;
+    border-radius: var(--radius-lg); overflow: hidden;
+    background:
+      radial-gradient(circle at 48% 72%, rgba(255, 106, 26, 0.18), transparent 38%),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.14));
+  }
+  .product-gallery::before {
+    content: ""; position: absolute; width: 260px; height: 260px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255, 106, 26, 0.16), rgba(53, 120, 255, 0.12)); filter: blur(8px);
+  }
+  .product-gallery::after {
+    content: ""; position: absolute; bottom: 74px; width: 68%; height: 22px; border-radius: 50%;
+    background: rgba(31, 57, 103, 0.16); filter: blur(16px); transition: transform .3s ease, opacity .3s ease;
+  }
+  .product-card:hover .product-gallery::after { transform: scale(1.08); opacity: .9; }
+  .product-image {
+    position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; object-fit: cover;
+    transition: transform .5s cubic-bezier(.22,1,.36,1);
+  }
+  .product-card:hover .product-image { transform: scale(1.05); }
+
+  .badge {
+    position: absolute; top: 18px; left: 18px; z-index: 4;
+    display: inline-flex; align-items: center; gap: 6px; padding: 9px 13px; white-space: nowrap;
+    border-radius: var(--radius-pill); background: var(--accent); color: #fff;
+    font-size: 13px; font-weight: 700; box-shadow: 0 12px 24px rgba(255, 106, 26, 0.22);
+  }
+  .badge svg { width: 14px; height: 14px; fill: none; stroke: #fff; stroke-width: 2.6; }
+  .badge.green { background: var(--green); box-shadow: 0 12px 24px rgba(31, 166, 122, 0.22); }
+  .badge.blue { background: var(--blue); box-shadow: 0 12px 24px rgba(53, 120, 255, 0.22); }
+  .badge.red { background: var(--red); box-shadow: 0 12px 24px rgba(240, 84, 84, 0.22); }
+
+  .favorite {
+    position: absolute; top: 18px; right: 18px; z-index: 4;
+    width: 44px; height: 44px; border: 0; border-radius: 50%;
+    background: rgba(255, 255, 255, 0.85); cursor: pointer;
+    display: grid; place-items: center;
+    box-shadow: 0 10px 26px rgba(31, 57, 103, 0.12);
+    transition: transform .25s cubic-bezier(.34,1.56,.64,1), background .25s ease, box-shadow .25s ease;
+  }
+  .favorite svg { width: 21px; height: 21px; fill: none; stroke: #97a1b6; stroke-width: 2; transition: fill .25s ease, stroke .25s ease, transform .25s ease; }
+  .favorite:hover { transform: scale(1.1); background: #fff; box-shadow: 0 12px 28px rgba(240,84,84,.26); }
+  .favorite:hover svg { fill: var(--red); stroke: var(--red); transform: scale(1.05); }
+
+  .thumbs { position: absolute; left: 18px; bottom: 18px; z-index: 4; display: flex; gap: 10px; }
+  .thumb {
+    width: 50px; height: 50px; border: 2px solid rgba(255, 255, 255, 0.9); border-radius: 15px;
+    background: rgba(255, 255, 255, 0.62); cursor: pointer; overflow: hidden; padding: 0;
+    transition: transform .22s ease, background .22s ease, border-color .22s ease;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .thumb:hover { transform: translateY(-2px); }
+  .thumb.active { border-color: var(--accent); }
+
+  .product-content { display: flex; flex-direction: column; padding: 6px 4px 4px 0; }
+  .category {
+    margin-bottom: 8px; color: var(--accent); font-size: 13px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.07em;
+  }
+  .title { margin-bottom: 11px; font-size: clamp(26px, 3vw, 34px); line-height: 1.05; letter-spacing: -0.025em; font-weight: 800; }
+  .rating-row { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; margin-bottom: 14px; color: var(--muted); font-size: 14px; font-weight: 600; }
+  .stars { color: #ffb629; letter-spacing: 1px; white-space: nowrap; }
+  .rating-value { color: var(--text); font-weight: 800; }
+  .description { margin-bottom: 18px; color: #485163; font-size: 15px; line-height: 1.55; }
+  .divider { height: 1px; margin-bottom: 18px; background: var(--line); }
+
+  .specs {
+    display: grid; grid-template-columns: repeat(3, 1fr); margin-bottom: 18px;
+    border-radius: var(--radius-md); overflow: hidden;
+    border: 1px solid rgba(16, 24, 40, 0.08); background: rgba(255, 255, 255, 0.4);
+  }
+  .spec { min-height: 76px; display: flex; align-items: center; gap: 11px; padding: 13px; }
+  .spec:not(:last-child) { border-right: 1px solid rgba(16, 24, 40, 0.08); }
+  .spec-icon {
+    width: 34px; height: 34px; flex-shrink: 0; display: grid; place-items: center;
+    border-radius: 50%; background: rgba(255, 106, 26, 0.1); color: var(--accent);
+  }
+  .spec-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+  .spec div span { display: block; color: var(--muted); font-size: 12px; line-height: 1.2; font-weight: 600; }
+  .spec div strong { display: block; margin-top: 3px; font-size: 14px; line-height: 1.2; font-weight: 800; }
+
+  .option-block { margin-bottom: 20px; }
+  .option-title { margin-bottom: 11px; color: var(--muted); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+  .sizes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .size {
+    min-height: 44px; border: 1.5px solid rgba(16, 24, 40, 0.12); border-radius: 14px;
+    background: rgba(255, 255, 255, 0.55); color: var(--text); font-size: 15px; font-weight: 700; cursor: pointer;
+    transition: transform .2s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .size:hover { transform: translateY(-2px); border-color: rgba(255,106,26,.5); color: var(--accent-dark); }
+  .size.active {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+    box-shadow: 0 12px 24px rgba(255, 106, 26, 0.28);
+  }
+
+  .price-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: auto; margin-bottom: 16px; }
+  .price { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; }
+  .old-price { color: var(--soft); font-size: 16px; font-weight: 600; text-decoration: line-through; }
+  .discount { padding: 6px 11px; border-radius: var(--radius-pill); background: rgba(255, 106, 26, 0.12); color: var(--accent); font-size: 13px; font-weight: 800; }
+
+  .actions { display: grid; grid-template-columns: 1fr 56px; gap: 12px; margin-bottom: 14px; }
+  .cart-btn, .compare-btn { border: 0; cursor: pointer; transition: transform .22s ease, box-shadow .22s ease, background .22s ease, color .22s ease; }
+  .cart-btn {
+    min-height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff;
+    font-size: 16px; font-weight: 800; box-shadow: 0 16px 34px rgba(255, 106, 26, 0.3);
+  }
+  .cart-btn svg { width: 19px; height: 19px; fill: none; stroke: #fff; stroke-width: 2; }
+  .cart-btn:hover { transform: translateY(-2px); box-shadow: 0 20px 42px rgba(255, 106, 26, 0.42); filter: brightness(1.04); }
+  .cart-btn:active { transform: translateY(0); }
+  .compare-btn {
+    min-height: 56px; border-radius: 18px; background: rgba(255, 255, 255, 0.62); display: grid; place-items: center;
+    border: 1.5px solid rgba(16,24,40,.1);
+  }
+  .compare-btn svg { width: 22px; height: 22px; fill: none; stroke: #40495a; stroke-width: 2; transition: stroke .22s ease; }
+  .compare-btn:hover { transform: translateY(-2px); background: #fff; box-shadow: 0 14px 28px rgba(31, 57, 103, 0.12); border-color: rgba(255,106,26,.4); }
+  .compare-btn:hover svg { stroke: var(--accent); }
+
+  .delivery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .delivery span {
+    display: flex; align-items: center; gap: 9px; min-height: 44px; padding: 9px 13px;
+    border-radius: 14px; background: rgba(255, 255, 255, 0.5); color: var(--muted); font-size: 13px; font-weight: 600;
+  }
+  .delivery svg { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: var(--soft); stroke-width: 1.8; }
+
+  @media (max-width: 1180px) {
+    .products-grid { grid-template-columns: 1fr; }
+    .product-card { max-width: 920px; margin: 0 auto; }
+  }
+  @media (max-width: 760px) {
+    .catalog { padding: 46px 14px; }
+    .catalog-head { flex-direction: column; align-items: flex-start; margin-bottom: 26px; }
+    .catalog-text { max-width: 620px; font-size: 15px; }
+    .product-card { padding: 14px; border-radius: 28px; }
+    .product-content { padding: 0; }
+    .specs { grid-template-columns: 1fr; }
+    .spec:not(:last-child) { border-right: 0; border-bottom: 1px solid rgba(16, 24, 40, 0.08); }
+  }
+  @media (max-width: 460px) {
+    .catalog-title { font-size: 32px; }
+    .thumb { width: 44px; height: 44px; }
+    .description { font-size: 14px; }
+    .price { font-size: 28px; }
+    .sizes { grid-template-columns: repeat(2, 1fr); }
+    .actions { grid-template-columns: 1fr; }
+    .delivery { grid-template-columns: 1fr; }
+  }
+  </style>
+</head>
+<body>
+<section class="catalog">
+  <div class="container">
+    <div class="catalog-head">
+      <div>
+        <div class="kicker"><svg viewBox="0 0 24 24"><circle cx="6" cy="16" r="3"/><circle cx="18" cy="16" r="3"/><path d="M6 16l5-7h5l-3 7M11 9h3"/></svg>Cloud Bike Store</div>
+        <h1 class="catalog-title">Велосипеды с карточками в стиле <span>premium cloud UI</span></h1>
+      </div>
+      <p class="catalog-text">8 полноценных карточек товара: фото, характеристики, размеры, рейтинг, цена, скидка, доставка, гарантия и hover-состояния.</p>
+    </div>
+
+    <div class="products-grid">
+
+      <!-- 1 -->
+      <article class="product-card">
+        <div class="product-gallery">
+          <span class="badge green"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>В наличии</span>
+          <button class="favorite" type="button" aria-label="В избранное"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 1.9 5 5.3 5 7.5 5 9 6.4 12 9c3-2.6 4.5-4 6.7-4 3.4 0 4.9 3.6 3.3 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+          <img class="product-image" src="https://images.unsplash.com/photo-1571068316344-75bc76f77890?auto=format&fit=crop&w=900&q=80" alt="Alpine X7 Trail 29">
+          <div class="thumbs">
+            <button class="thumb active" type="button" aria-label="Фото 1"><img src="https://images.unsplash.com/photo-1571068316344-75bc76f77890?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 2"><img src="https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 3"><img src="https://images.unsplash.com/photo-1511994298241-608e28f14fde?auto=format&fit=crop&w=160&q=70" alt=""></button>
+          </div>
+        </div>
+        <div class="product-content">
+          <p class="category">Горный велосипед</p>
+          <h2 class="title">Alpine X7 Trail 29</h2>
+          <div class="rating-row"><span class="stars">★★★★★</span><span class="rating-value">4.9</span><span>128 отзывов</span></div>
+          <p class="description">Лёгкая алюминиевая рама, уверенная геометрия и гидравлические тормоза для маршрутов, где обычный велосипед уже просит пощады.</p>
+          <div class="divider"></div>
+          <div class="specs">
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></svg></span><div><span>Колёса</span><strong>29 дюймов</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="16" r="3"/><circle cx="18" cy="16" r="3"/><path d="M6 16l5-7h5l-3 7M11 9h3"/></svg></span><div><span>Рама</span><strong>Алюминий</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><path d="M21 13a9 9 0 1 0-9 9"/><path d="M12 12l5-3"/></svg></span><div><span>Скорости</span><strong>21 режим</strong></div></div>
+          </div>
+          <div class="option-block">
+            <p class="option-title">Размер рамы</p>
+            <div class="sizes"><button class="size" type="button">S</button><button class="size active" type="button">M</button><button class="size" type="button">L</button><button class="size" type="button">XL</button></div>
+          </div>
+          <div class="price-row"><span class="price">78 900 ₽</span><span class="old-price">89 900 ₽</span><span class="discount">Скидка −12%</span></div>
+          <div class="actions">
+            <button class="cart-btn" type="button"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.5 12h10l2-8H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>Добавить в корзину</button>
+            <button class="compare-btn" type="button" aria-label="Сравнить"><svg viewBox="0 0 24 24"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg></button>
+          </div>
+          <div class="delivery">
+            <span><svg viewBox="0 0 24 24"><rect x="1" y="6" width="13" height="11" rx="1"/><path d="M14 9h4l3 3v5h-7"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>Доставка от 1 дня</span>
+            <span><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/></svg>Гарантия 2 года</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 2 -->
+      <article class="product-card">
+        <div class="product-gallery">
+          <span class="badge blue">Новинка</span>
+          <button class="favorite" type="button" aria-label="В избранное"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 1.9 5 5.3 5 7.5 5 9 6.4 12 9c3-2.6 4.5-4 6.7-4 3.4 0 4.9 3.6 3.3 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+          <img class="product-image" src="https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?auto=format&fit=crop&w=900&q=80" alt="Urban Flow Comfort">
+          <div class="thumbs">
+            <button class="thumb active" type="button" aria-label="Фото 1"><img src="https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 2"><img src="https://images.unsplash.com/photo-1529422643029-d4585747aaf2?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 3"><img src="https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=160&q=70" alt=""></button>
+          </div>
+        </div>
+        <div class="product-content">
+          <p class="category">Городской велосипед</p>
+          <h2 class="title">Urban Flow Comfort</h2>
+          <div class="rating-row"><span class="stars">★★★★★</span><span class="rating-value">4.7</span><span>86 отзывов</span></div>
+          <p class="description">Комфортная посадка, мягкий ход и спокойный городской характер. Отличный вариант для ежедневных поездок и прогулок.</p>
+          <div class="divider"></div>
+          <div class="specs">
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></svg></span><div><span>Колёса</span><strong>28 дюймов</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="16" r="3"/><circle cx="18" cy="16" r="3"/><path d="M6 16l5-7h5l-3 7M11 9h3"/></svg></span><div><span>Рама</span><strong>Сталь</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><path d="M21 13a9 9 0 1 0-9 9"/><path d="M12 12l5-3"/></svg></span><div><span>Скорости</span><strong>7 режимов</strong></div></div>
+          </div>
+          <div class="option-block">
+            <p class="option-title">Размер рамы</p>
+            <div class="sizes"><button class="size active" type="button">S</button><button class="size" type="button">M</button><button class="size" type="button">L</button><button class="size" type="button">XL</button></div>
+          </div>
+          <div class="price-row"><span class="price">46 500 ₽</span></div>
+          <div class="actions">
+            <button class="cart-btn" type="button"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.5 12h10l2-8H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>Добавить в корзину</button>
+            <button class="compare-btn" type="button" aria-label="Сравнить"><svg viewBox="0 0 24 24"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg></button>
+          </div>
+          <div class="delivery">
+            <span><svg viewBox="0 0 24 24"><rect x="1" y="6" width="13" height="11" rx="1"/><path d="M14 9h4l3 3v5h-7"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>Доставка от 2 дней</span>
+            <span><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/></svg>Гарантия 1 год</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 3 -->
+      <article class="product-card">
+        <div class="product-gallery">
+          <span class="badge red">Скидка недели −15%</span>
+          <button class="favorite" type="button" aria-label="В избранное"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 1.9 5 5.3 5 7.5 5 9 6.4 12 9c3-2.6 4.5-4 6.7-4 3.4 0 4.9 3.6 3.3 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+          <img class="product-image" src="https://images.unsplash.com/photo-1511994298241-608e28f14fde?auto=format&fit=crop&w=900&q=80" alt="Aero Race Carbon S">
+          <div class="thumbs">
+            <button class="thumb active" type="button" aria-label="Фото 1"><img src="https://images.unsplash.com/photo-1511994298241-608e28f14fde?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 2"><img src="https://images.unsplash.com/photo-1571068316344-75bc76f77890?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 3"><img src="https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=160&q=70" alt=""></button>
+          </div>
+        </div>
+        <div class="product-content">
+          <p class="category">Шоссейный велосипед</p>
+          <h2 class="title">Aero Race Carbon S</h2>
+          <div class="rating-row"><span class="stars">★★★★★</span><span class="rating-value">5.0</span><span>42 отзыва</span></div>
+          <p class="description">Карбоновая рама, спортивная посадка и высокая скорость для тех, кто не просто едет, а режет воздух красиво.</p>
+          <div class="divider"></div>
+          <div class="specs">
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><path d="M7 8h10l2 12H5z"/><circle cx="12" cy="5" r="2"/></svg></span><div><span>Вес</span><strong>8.6 кг</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="16" r="3"/><circle cx="18" cy="16" r="3"/><path d="M6 16l5-7h5l-3 7M11 9h3"/></svg></span><div><span>Рама</span><strong>Карбон</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><path d="M21 13a9 9 0 1 0-9 9"/><path d="M12 12l5-3"/></svg></span><div><span>Скорости</span><strong>22 режима</strong></div></div>
+          </div>
+          <div class="option-block">
+            <p class="option-title">Размер рамы</p>
+            <div class="sizes"><button class="size" type="button">S</button><button class="size" type="button">M</button><button class="size active" type="button">L</button><button class="size" type="button">XL</button></div>
+          </div>
+          <div class="price-row"><span class="price">139 900 ₽</span><span class="old-price">164 900 ₽</span><span class="discount">Скидка −15%</span></div>
+          <div class="actions">
+            <button class="cart-btn" type="button"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.5 12h10l2-8H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>Добавить в корзину</button>
+            <button class="compare-btn" type="button" aria-label="Сравнить"><svg viewBox="0 0 24 24"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg></button>
+          </div>
+          <div class="delivery">
+            <span><svg viewBox="0 0 24 24"><rect x="1" y="6" width="13" height="11" rx="1"/><path d="M14 9h4l3 3v5h-7"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>Доставка от 1 дня</span>
+            <span><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/></svg>Гарантия 3 года</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 4 -->
+      <article class="product-card">
+        <div class="product-gallery">
+          <span class="badge">E-bike</span>
+          <button class="favorite" type="button" aria-label="В избранное"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 1.9 5 5.3 5 7.5 5 9 6.4 12 9c3-2.6 4.5-4 6.7-4 3.4 0 4.9 3.6 3.3 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+          <img class="product-image" src="https://images.unsplash.com/photo-1593764592116-bfb2a97c642a?auto=format&fit=crop&w=900&q=80" alt="Volt City One">
+          <div class="thumbs">
+            <button class="thumb active" type="button" aria-label="Фото 1"><img src="https://images.unsplash.com/photo-1593764592116-bfb2a97c642a?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 2"><img src="https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 3"><img src="https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=160&q=70" alt=""></button>
+          </div>
+        </div>
+        <div class="product-content">
+          <p class="category">Электровелосипед</p>
+          <h2 class="title">Volt City One</h2>
+          <div class="rating-row"><span class="stars">★★★★★</span><span class="rating-value">4.8</span><span>64 отзыва</span></div>
+          <p class="description">Электропомощник для города: запас хода до 70 км, плавный старт и запас мощности для подъёмов.</p>
+          <div class="divider"></div>
+          <div class="specs">
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.2 16.8C15 15 9 8 16 6.6"/></svg></span><div><span>Запас хода</span><strong>70 км</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><path d="M13 3L5 13h6l-1 8 8-11h-6z"/></svg></span><div><span>Мотор</span><strong>350 W</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4"/></svg></span><div><span>Тормоза</span><strong>Disc</strong></div></div>
+          </div>
+          <div class="option-block">
+            <p class="option-title">Размер рамы</p>
+            <div class="sizes"><button class="size" type="button">S</button><button class="size active" type="button">M</button><button class="size" type="button">L</button><button class="size" type="button">XL</button></div>
+          </div>
+          <div class="price-row"><span class="price">112 000 ₽</span></div>
+          <div class="actions">
+            <button class="cart-btn" type="button"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.5 12h10l2-8H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>Добавить в корзину</button>
+            <button class="compare-btn" type="button" aria-label="Сравнить"><svg viewBox="0 0 24 24"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg></button>
+          </div>
+          <div class="delivery">
+            <span><svg viewBox="0 0 24 24"><rect x="1" y="6" width="13" height="11" rx="1"/><path d="M14 9h4l3 3v5h-7"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>Доставка от 3 дней</span>
+            <span><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/></svg>Гарантия 2 года</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 5 -->
+      <article class="product-card">
+        <div class="product-gallery">
+          <span class="badge green">Топ выбор</span>
+          <button class="favorite" type="button" aria-label="В избранное"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 1.9 5 5.3 5 7.5 5 9 6.4 12 9c3-2.6 4.5-4 6.7-4 3.4 0 4.9 3.6 3.3 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+          <img class="product-image" src="https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=900&q=80" alt="Gravel Pro Route">
+          <div class="thumbs">
+            <button class="thumb active" type="button" aria-label="Фото 1"><img src="https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 2"><img src="https://images.unsplash.com/photo-1511994298241-608e28f14fde?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 3"><img src="https://images.unsplash.com/photo-1571068316344-75bc76f77890?auto=format&fit=crop&w=160&q=70" alt=""></button>
+          </div>
+        </div>
+        <div class="product-content">
+          <p class="category">Гравийный велосипед</p>
+          <h2 class="title">Gravel Pro Route</h2>
+          <div class="rating-row"><span class="stars">★★★★★</span><span class="rating-value">4.6</span><span>73 отзыва</span></div>
+          <p class="description">Универсальная модель для асфальта, грунта и дальних маршрутов. Тот случай, когда один велосипед закрывает много сценариев.</p>
+          <div class="divider"></div>
+          <div class="specs">
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></svg></span><div><span>Колёса</span><strong>28 дюймов</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><path d="M9 4h6M12 4v6M12 10l-3 10M12 10l3 10"/></svg></span><div><span>Вилка</span><strong>Alu fork</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><path d="M21 13a9 9 0 1 0-9 9"/><path d="M12 12l5-3"/></svg></span><div><span>Скорости</span><strong>18 режимов</strong></div></div>
+          </div>
+          <div class="option-block">
+            <p class="option-title">Размер рамы</p>
+            <div class="sizes"><button class="size" type="button">S</button><button class="size" type="button">M</button><button class="size active" type="button">L</button><button class="size" type="button">XL</button></div>
+          </div>
+          <div class="price-row"><span class="price">84 700 ₽</span></div>
+          <div class="actions">
+            <button class="cart-btn" type="button"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.5 12h10l2-8H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>Добавить в корзину</button>
+            <button class="compare-btn" type="button" aria-label="Сравнить"><svg viewBox="0 0 24 24"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg></button>
+          </div>
+          <div class="delivery">
+            <span><svg viewBox="0 0 24 24"><rect x="1" y="6" width="13" height="11" rx="1"/><path d="M14 9h4l3 3v5h-7"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>Доставка от 1 дня</span>
+            <span><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/></svg>Гарантия 2 года</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 6 -->
+      <article class="product-card">
+        <div class="product-gallery">
+          <span class="badge red">Скидка недели −10%</span>
+          <button class="favorite" type="button" aria-label="В избранное"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 1.9 5 5.3 5 7.5 5 9 6.4 12 9c3-2.6 4.5-4 6.7-4 3.4 0 4.9 3.6 3.3 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+          <img class="product-image" src="https://images.unsplash.com/photo-1529422643029-d4585747aaf2?auto=format&fit=crop&w=900&q=80" alt="Luna City Soft">
+          <div class="thumbs">
+            <button class="thumb active" type="button" aria-label="Фото 1"><img src="https://images.unsplash.com/photo-1529422643029-d4585747aaf2?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 2"><img src="https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 3"><img src="https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=160&q=70" alt=""></button>
+          </div>
+        </div>
+        <div class="product-content">
+          <p class="category">City bike</p>
+          <h2 class="title">Luna City Soft</h2>
+          <div class="rating-row"><span class="stars">★★★★★</span><span class="rating-value">4.5</span><span>51 отзыв</span></div>
+          <p class="description">Мягкая городская модель с низкой рамой, корзиной и комфортной посадкой для спокойных поездок каждый день.</p>
+          <div class="divider"></div>
+          <div class="specs">
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></svg></span><div><span>Колёса</span><strong>26 дюймов</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="16" r="3"/><circle cx="18" cy="16" r="3"/><path d="M6 16l5-7h5l-3 7M11 9h3"/></svg></span><div><span>Рама</span><strong>Low frame</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><path d="M4 8h16l-2 11H6z"/><path d="M8 8l2-4h4l2 4"/></svg></span><div><span>Опция</span><strong>Корзина</strong></div></div>
+          </div>
+          <div class="option-block">
+            <p class="option-title">Размер рамы</p>
+            <div class="sizes"><button class="size active" type="button">S</button><button class="size" type="button">M</button><button class="size" type="button">L</button><button class="size" type="button">XL</button></div>
+          </div>
+          <div class="price-row"><span class="price">39 900 ₽</span><span class="old-price">44 300 ₽</span><span class="discount">Скидка −10%</span></div>
+          <div class="actions">
+            <button class="cart-btn" type="button"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.5 12h10l2-8H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>Добавить в корзину</button>
+            <button class="compare-btn" type="button" aria-label="Сравнить"><svg viewBox="0 0 24 24"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg></button>
+          </div>
+          <div class="delivery">
+            <span><svg viewBox="0 0 24 24"><rect x="1" y="6" width="13" height="11" rx="1"/><path d="M14 9h4l3 3v5h-7"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>Доставка от 2 дней</span>
+            <span><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/></svg>Гарантия 1 год</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 7 -->
+      <article class="product-card">
+        <div class="product-gallery">
+          <span class="badge blue">New</span>
+          <button class="favorite" type="button" aria-label="В избранное"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 1.9 5 5.3 5 7.5 5 9 6.4 12 9c3-2.6 4.5-4 6.7-4 3.4 0 4.9 3.6 3.3 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+          <img class="product-image" src="https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=900&q=80" alt="Junior Ride 24">
+          <div class="thumbs">
+            <button class="thumb active" type="button" aria-label="Фото 1"><img src="https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 2"><img src="https://images.unsplash.com/photo-1529422643029-d4585747aaf2?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 3"><img src="https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?auto=format&fit=crop&w=160&q=70" alt=""></button>
+          </div>
+        </div>
+        <div class="product-content">
+          <p class="category">Подростковый велосипед</p>
+          <h2 class="title">Junior Ride 24</h2>
+          <div class="rating-row"><span class="stars">★★★★★</span><span class="rating-value">4.9</span><span>37 отзывов</span></div>
+          <p class="description">Лёгкий подростковый велосипед с понятным управлением, прочной рамой и размером, который не «на один сезон».</p>
+          <div class="divider"></div>
+          <div class="specs">
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></svg></span><div><span>Колёса</span><strong>24 дюйма</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="16" r="3"/><circle cx="18" cy="16" r="3"/><path d="M6 16l5-7h5l-3 7M11 9h3"/></svg></span><div><span>Рама</span><strong>Алюминий</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><path d="M21 13a9 9 0 1 0-9 9"/><path d="M12 12l5-3"/></svg></span><div><span>Скорости</span><strong>8 режимов</strong></div></div>
+          </div>
+          <div class="option-block">
+            <p class="option-title">Размер рамы</p>
+            <div class="sizes"><button class="size active" type="button">XS</button><button class="size" type="button">S</button><button class="size" type="button">M</button><button class="size" type="button">L</button></div>
+          </div>
+          <div class="price-row"><span class="price">32 400 ₽</span></div>
+          <div class="actions">
+            <button class="cart-btn" type="button"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.5 12h10l2-8H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>Добавить в корзину</button>
+            <button class="compare-btn" type="button" aria-label="Сравнить"><svg viewBox="0 0 24 24"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg></button>
+          </div>
+          <div class="delivery">
+            <span><svg viewBox="0 0 24 24"><rect x="1" y="6" width="13" height="11" rx="1"/><path d="M14 9h4l3 3v5h-7"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>Доставка от 1 дня</span>
+            <span><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/></svg>Гарантия 1 год</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 8 -->
+      <article class="product-card">
+        <div class="product-gallery">
+          <span class="badge">Touring</span>
+          <button class="favorite" type="button" aria-label="В избранное"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 1.9 5 5.3 5 7.5 5 9 6.4 12 9c3-2.6 4.5-4 6.7-4 3.4 0 4.9 3.6 3.3 6.8C19.5 16.4 12 21 12 21z"/></svg></button>
+          <img class="product-image" src="https://images.unsplash.com/photo-1571333250630-f0230c320b6d?auto=format&fit=crop&w=900&q=80" alt="Nord Way Expedition">
+          <div class="thumbs">
+            <button class="thumb active" type="button" aria-label="Фото 1"><img src="https://images.unsplash.com/photo-1571333250630-f0230c320b6d?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 2"><img src="https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=160&q=70" alt=""></button>
+            <button class="thumb" type="button" aria-label="Фото 3"><img src="https://images.unsplash.com/photo-1511994298241-608e28f14fde?auto=format&fit=crop&w=160&q=70" alt=""></button>
+          </div>
+        </div>
+        <div class="product-content">
+          <p class="category">Туринговый велосипед</p>
+          <h2 class="title">Nord Way Expedition</h2>
+          <div class="rating-row"><span class="stars">★★★★★</span><span class="rating-value">4.7</span><span>59 отзывов</span></div>
+          <p class="description">Велосипед для длинных маршрутов: багажник, комфортная геометрия и надёжные тормоза для поездок без лишней драмы.</p>
+          <div class="divider"></div>
+          <div class="specs">
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/></svg></span><div><span>Колёса</span><strong>28 дюймов</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="4" rx="1"/><path d="M6 10v8M18 10v8M4 18h16"/></svg></span><div><span>Багажник</span><strong>Rack</strong></div></div>
+            <div class="spec"><span class="spec-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4"/></svg></span><div><span>Тормоза</span><strong>Hydraulic</strong></div></div>
+          </div>
+          <div class="option-block">
+            <p class="option-title">Размер рамы</p>
+            <div class="sizes"><button class="size" type="button">S</button><button class="size" type="button">M</button><button class="size active" type="button">L</button><button class="size" type="button">XL</button></div>
+          </div>
+          <div class="price-row"><span class="price">91 200 ₽</span></div>
+          <div class="actions">
+            <button class="cart-btn" type="button"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.5 12h10l2-8H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>Добавить в корзину</button>
+            <button class="compare-btn" type="button" aria-label="Сравнить"><svg viewBox="0 0 24 24"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg></button>
+          </div>
+          <div class="delivery">
+            <span><svg viewBox="0 0 24 24"><rect x="1" y="6" width="13" height="11" rx="1"/><path d="M14 9h4l3 3v5h-7"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>Доставка от 2 дней</span>
+            <span><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/></svg>Гарантия 2 года</span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+</body>
+</html>
